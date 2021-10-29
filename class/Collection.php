@@ -2,8 +2,8 @@
 namespace JPNS\Directus\Collection;
 
 use JPNS\Basic\http\HTTP;
-use JPNS\Basic\Validation\Validation;
 use JPNS\Basic\Notification\Notification;
+use JPNS\Directus\Validation\Validation;
 use JPNS\Directus\ApiUrl\ApiUrl;
 
 /**
@@ -15,13 +15,16 @@ use JPNS\Directus\ApiUrl\ApiUrl;
  */
 class Collection {
 	public $token;
+	public $user;
+
 	public $HTTP;
 	public $Validation;
 	public $Notification;
 	public $ApiUrl;
 
-	function __construct($token) {
+	function __construct($token, $user=null) {
 		$this->token = $token;
+		$this->user  = $user;
 
 		$this->HTTP = new HTTP();
 		$this->Validation = new Validation();
@@ -37,7 +40,12 @@ class Collection {
 	 * @return array array with data
 	 */
 	public function get_list($data=[]) {
-		$url = $this->ApiUrl->url('/collections', $this->token);
+		$url_data = [
+			'collection' => $data['collection'],
+			'role'       => $this->user['user_role_title'],
+			'action'     => 'read'
+		];
+		$url = $this->ApiUrl->url('/collections', $this->token, $url_data);
 
 		/* Get collection data */
 		$raw_data = $this->HTTP->get($url);
@@ -61,7 +69,13 @@ class Collection {
 	 */
 	public function get_single($data=[]) {
 		$collection = trim($data['collection']);
-		$url        = $this->ApiUrl->url('/collections/' . $collection, $this->token);
+
+		$url_data = [
+			'collection' => $data['collection'],
+			'role'       => $this->user['user_role_title'],
+			'action'     => 'read'
+		];
+		$url = $this->ApiUrl->url('/collections/' . $collection, $this->token, $url_data);
 
 		/* Get collection data */
 		$raw_data = $this->HTTP->get($url);

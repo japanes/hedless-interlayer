@@ -1,11 +1,12 @@
 <?php
 /* Init namespaces */
 use JPNS\Basic\http\HTTP;
-use JPNS\Basic\Validation\Validation;
 use JPNS\Basic\Notification\Notification;
+use JPNS\Directus\Validation\Validation;
 use JPNS\Directus\ApiUrl\ApiUrl;
 use JPNS\Directus\Auth\Auth;
 use JPNS\Directus\Directus\Directus;
+use JPNS\Directus\User\User;
 
 /* Init basic classes */
 $http         = new HTTP();
@@ -14,21 +15,19 @@ $notification = new Notification();
 $url          = new ApiUrl();
 $auth         = new Auth();
 
-/* Get user access token */
-$user = $auth->get_api_user();
-$token = $auth->get_token($user['token']);
 
-//var_dump($user);
-//var_dump($token);
-//exit();
+/* Get user access token */
+$session = $auth->get_api_user();
+$user    = $auth->get_user($session);
+$token   = $user['token'];
 
 /* Collect request data to $data array */
 $data = [];
 if( isset($_GET['method']) && ! empty($_GET['method']) ) {
 	$data['method'] = trim($_GET['method']);
 }
-if( isset($_GET['entity']) && ! empty($_GET['entity']) ) {
-	$data['entity'] = trim($_GET['entity']);
+if( isset($_GET['action']) && ! empty($_GET['action']) ) {
+	$data['action'] = trim($_GET['action']);
 }
 if( isset($_GET['collection']) && ! empty($_GET['collection']) ) {
 	$data['collection'] = trim($_GET['collection']);
@@ -38,7 +37,7 @@ if( isset($_GET['id']) && ! empty($_GET['id']) ) {
 }
 
 /* Init Directus class and request result data */
-$directus = new Directus($data['entity'], $token);
+$directus = new Directus($data['action'], $token, $user);
 $result   = $directus->request($data);
 
 //print_r($result);

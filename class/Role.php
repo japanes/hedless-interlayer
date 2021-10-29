@@ -1,5 +1,5 @@
 <?php
-namespace JPNS\Directus\Relation;
+namespace JPNS\Directus\Role;
 
 use JPNS\Basic\http\HTTP;
 use JPNS\Basic\Notification\Notification;
@@ -7,26 +7,33 @@ use JPNS\Directus\Validation\Validation;
 use JPNS\Directus\ApiUrl\ApiUrl;
 
 /**
- * List Relations
- * Retrieve a Relation
- * Create a Relation
- * Update a Relation
- * Delete a Relation
+ * List Roles
+ * Retrieve a Role
+ * Create a Role
+ * Update a Role
+ * Delete a Role
  */
-class Relation {
+class Role {
 	public $token;
 	public $HTTP;
 	public $Validation;
 	public $Notification;
 	public $ApiUrl;
 
-	function __construct($token) {
+	function __construct($token=null) {
 		$this->token = $token;
 
 		$this->HTTP = new HTTP();
 		$this->Validation = new Validation();
 		$this->Notification = new Notification();
 		$this->ApiUrl = new ApiUrl();
+	}
+
+	/**
+	 * @param mixed|null $token
+	 */
+	public function set_token( $token ) {
+		$this->token = $token;
 	}
 
 	/**
@@ -68,6 +75,28 @@ class Relation {
 		$data = $this->Validation->output($raw_data);
 
 		return $data;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function get_role_name($role_id=null) {
+		$role = null;
+		$roles_dir = __DIR__ . '/../roles';
+		$roles     = scandir($roles_dir);
+
+		$exclude = ['.', '..', '.htaccess'];
+		foreach($roles as $role_file) {
+			if( ! in_array($role_file, $exclude) ) {
+				$curr_id = file_get_contents( $roles_dir . '/' . $role_file );
+
+				if( $curr_id === $role_id ) {
+					$role = $role_file;
+				}
+			}
+		}
+
+		return $role;
 	}
 
 	/**
@@ -198,6 +227,7 @@ class Relation {
 					'foreign_key_table'  => $val['one_collection'],
 					'foreign_key_column' => $val['one_field'],
 					'constraint_name'    => $val['junction_field'],
+//				'junction_field'     => $val['junction_field'],
 				],
 				'meta' => [
 					'junction_field'          => $val['junction_field'],
@@ -211,12 +241,8 @@ class Relation {
 				],
 			];
 
-			var_dump($relation);
-
 			$raw_data = $this->HTTP->post($url, $relation);
 			$result = $this->Validation->output($raw_data);
-
-			var_dump($result);
 		}
 
 		$translation_relation = [

@@ -1,7 +1,7 @@
 <?php
 namespace JPNS\Basic\Notification;
 use JPNS\Basic\http\HTTP;
-use JPNS\Basic\Validation\Validation;
+use JPNS\Directus\Validation\Validation;
 use JPNS\Directus\ApiUrl\ApiUrl;
 
 /**

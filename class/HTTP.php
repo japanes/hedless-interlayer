@@ -42,6 +42,10 @@ class HTTP {
 
 		$curl = curl_init($url);
 
+		// Always send no-cache curl requests
+		curl_setopt($curl, CURLOPT_FRESH_CONNECT, true);
+		curl_setopt($curl, CURLOPT_DNS_CACHE_TIMEOUT, 0);
+
 		curl_setopt($curl, CURLOPT_POST, true);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
@@ -72,6 +76,7 @@ class HTTP {
 
 		$response = curl_exec($curl);
 		$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
 		curl_close($curl);
 
 		$result = ['response' => json_decode($response), 'code' => $httpCode];

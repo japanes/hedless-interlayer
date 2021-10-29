@@ -1,6 +1,6 @@
 <?php
 
-namespace JPNS\Basic\Validation;
+namespace JPNS\Directus\Validation;
 
 class Validation {
 	/**

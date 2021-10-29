@@ -7,14 +7,18 @@ use JPNS\Directus\Item\Item;
 class Directus {
 	public $token;
 	public $entity;
+	public $user;
 
-	public function __construct($type, $token) {
+
+	public function __construct($type, $token, $user=null) {
 		$this->token = $token;
+		$this->user  = $user;
+
 		if($type === 'collection') {
-			$this->entity = new Collection($this->token);
+			$this->entity = new Collection($this->token, $this->user);
 		}
 		if($type === 'item') {
-			$this->entity = new Item($this->token);
+			$this->entity = new Item($this->token, $this->user);
 		}
 	}
 

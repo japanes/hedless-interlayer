@@ -1,39 +1,47 @@
 <?php
-namespace JPNS\Directus\Item;
+namespace JPNS\Directus\User;
 
 use JPNS\Basic\http\HTTP;
 use JPNS\Basic\Notification\Notification;
 use JPNS\Directus\Validation\Validation;
 use JPNS\Directus\ApiUrl\ApiUrl;
-use JPNS\Directus\User\User;
 
 /**
- * List Collections
- * Retrieve a Collection
- * Create a Collection
- * Update a Collection
- * Delete a Collection
+ * List Users
+ * Retrieve a User
+ * Create a User
+ * Update a User
+ * Delete a User
  */
-class Item {
+class User {
 	public $token;
-	public $user;
 
 	public $HTTP;
 	public $Validation;
 	public $Notification;
 	public $ApiUrl;
-	public $User;
 
-	function __construct($token, $user=null) {
+	function __construct($token=null) {
 		$this->token = $token;
-		$this->user  = $user;
 
 		$this->HTTP = new HTTP();
 		$this->Validation = new Validation();
 		$this->Notification = new Notification();
 		$this->ApiUrl = new ApiUrl();
+	}
 
-//		$this->ApiUrl->set_user();
+	/**
+	 * @param mixed|null $token
+	 */
+	public function set_token( $token ) {
+		$this->token = $token;
+	}
+
+	/**
+	 * @return mixed|null
+	 */
+	public function get_token() {
+		return $this->token;
 	}
 
 	/**
@@ -43,28 +51,19 @@ class Item {
 	 *
 	 * @return array array with data
 	 */
-	public function get_list($data=[]) {
-		$collection = trim($data['collection']);
-
-		$url_data = [
-			'collection' => $data['collection'],
-			'role'       => $this->user['user_role_title'],
-			'action'     => 'read'
-		];
-		$url = $this->ApiUrl->url('/items/' . $collection, $this->token, $url_data);
-
-////		var_dump(2142141);
-//		var_dump(222);
-//		var_dump($url);
-//		exit();
-		/* Get collection data */
-		$raw_data = $this->HTTP->get($url);
-		$data = $this->Validation->output($raw_data);
-
-
-//		var_dump($data);
-//		exit();
-		return $data;
+	public function get_list() {
+		$result = [];
+//		$collection = trim($data['collection']);
+//		$url = $this->ApiUrl->url('/items/' . $collection, $this->token);
+//
+//		/* Get collection data */
+//		$raw_data = $this->HTTP->get($url);
+//		$data = $this->Validation->output($raw_data);
+//
+//
+////		var_dump($data);
+////		exit();
+		return $result;
 	}
 
 	/**
@@ -74,16 +73,8 @@ class Item {
 	 *
 	 * @return array array with data
 	 */
-	public function get_single($data=[]) {
-		$collection = trim($data['collection']);
-		$id = (int) $data['id'];
-
-		$url_data = [
-			'collection' => $data['collection'],
-			'role'       => $this->user['user_role_title'],
-			'action'     => 'read'
-		];
-		$url = $this->ApiUrl->url('/items/' . $collection . '/' . $id, $this->token, $url_data);
+	public function get_single($user_id='me') {
+		$url = $this->ApiUrl->url('/users/' . $user_id, $this->token);
 
 		/* Get collection data */
 		$raw_data = $this->HTTP->get($url);
@@ -99,11 +90,8 @@ class Item {
 	 *
 	 * @return array array with data
 	 */
-	public function create($collection, $data=[]) {
-		$result = null;
-
-		$url = $this->ApiUrl->url('/items/' . $collection, $this->token);
-
+	public function create($data=[]) {
+		$url = $this->ApiUrl->url('/users', $this->token);
 		$raw_data = $this->HTTP->post($url, $data);
 		$result = $this->Validation->output($raw_data);
 
