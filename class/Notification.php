@@ -36,4 +36,36 @@ class Notification {
 
 		return $result;
 	}
+
+	/**
+	 * Outputs standardized notification for any type of notification
+	 * like errors, warnings or success
+	 * @param array|string $notification notification in any type of data
+	 */
+	public function forbidden() {
+		return [
+			'errors' => [
+				[
+					'message' => "You don't have permission to access this.",
+					'extensions' => [ 'code' => 'FORBIDDEN' ],
+				],
+			]
+		];
+	}
+
+	/**
+	 * Outputs standardized notification for any type of notification
+	 * like errors, warnings or success
+	 * @param array|string $notification notification in any type of data
+	 */
+	public function auth_denied() {
+		return [
+			'errors' => [
+				[
+					'message' => "You don't have permission to access this.",
+					'extensions' => [ 'code' => 'FORBIDDEN' ],
+				],
+			]
+		];
+	}
 }

@@ -37,13 +37,13 @@ class Directus {
 			$result = $this->entity->get_list($data);
 		}
 		elseif( $data['method'] === 'create' ) {
-			$result = $this->entity->get_list($data);
+			$result = $this->entity->create($data);
 		}
 		elseif( $data['method'] === 'update' ) {
-			$result = $this->entity->get_list($data);
+			$result = $this->entity->update($data);
 		}
 		elseif( $data['method'] === 'delete' ) {
-			$result = $this->entity->get_list($data);
+			$result = $this->entity->delete($data);
 		}
 
 		return $result;

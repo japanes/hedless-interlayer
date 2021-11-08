@@ -6,6 +6,7 @@ use JPNS\Basic\Notification\Notification;
 use JPNS\Directus\Validation\Validation;
 use JPNS\Directus\ApiUrl\ApiUrl;
 use JPNS\Directus\User\User;
+use JPNS\Directus\File\File;
 
 /**
  * List Collections
@@ -23,6 +24,7 @@ class Item {
 	public $Notification;
 	public $ApiUrl;
 	public $User;
+	public $File;
 
 	function __construct($token, $user=null) {
 		$this->token = $token;
@@ -32,6 +34,7 @@ class Item {
 		$this->Validation = new Validation();
 		$this->Notification = new Notification();
 		$this->ApiUrl = new ApiUrl();
+		$this->File = new File($this->token, $this->user);
 
 //		$this->ApiUrl->set_user();
 	}
@@ -118,7 +121,66 @@ class Item {
 	 * @return array array with data
 	 */
 	public function update($data=[]) {
+		$result = [];
 
+		$files = [];
+		if( ! empty($_FILES) ) {
+			$files = $this->File->upload();
+		}
+
+		if( isset($data['payload']) ) {
+			$payload = json_decode($data['payload'], JSON_OBJECT_AS_ARRAY);
+			if( json_last_error() === JSON_ERROR_NONE ) {
+
+				$translation_result = [];
+				/* Check if translations field */
+				if( isset($payload['translations']) ) {
+					$translation_collection = APP_SETTINGS['collections'][$data['collection']]['translations']['language']['many_collection'];
+					foreach($payload['translations'] as $translation) {
+						$translation_id = $translation['id'];
+						$translation_url = $this->ApiUrl->url('/items/' . $translation_collection . '/' . $translation_id, $this->token);
+
+						if( ! empty($files) ) {
+							foreach($files as $key => $file) {
+								$key_parts = explode('__', $key);
+								if( $translation_id == $key_parts[1] ) {
+									$translation[$key_parts[2]] = $file['data']['id'];
+								}
+							}
+						}
+
+						unset($translation['id']);
+
+						$raw_data = $this->HTTP->patch($translation_url, $translation);
+						$translation_result[] = $this->Validation->output($raw_data);
+					}
+				}
+
+
+				$id = $payload['id'];
+
+				unset($payload['id']);
+				unset($payload['translations']);
+
+				if( ! empty($payload) ) {
+					$url = $this->ApiUrl->url('/items/' . $data['collection'] . '/' . $id, $this->token);
+					$this->HTTP->patch($url, $payload);
+				}
+
+				$url_data = [
+					'collection' => $data['collection'],
+					'role'       => $this->user['user_role_title'],
+					'action'     => 'read'
+				];
+				$url = $this->ApiUrl->url('/items/' . $data['collection'] , $this->token, $url_data);
+
+				$raw_data = $this->HTTP->get($url, $payload);
+				$result = $this->Validation->output($raw_data);
+
+			}
+		}
+
+		return $result;
 	}
 
 	/**

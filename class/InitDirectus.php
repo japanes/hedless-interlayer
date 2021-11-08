@@ -12,6 +12,7 @@ use JPNS\Directus\Relation\Relation;
 use JPNS\Directus\Field\Field;
 use JPNS\Directus\Item\Item;
 use JPNS\Directus\User\User;
+use JPNS\Directus\File\File;
 
 /**
  * Initial action. Create custom tables in database, user roles,
@@ -65,7 +66,6 @@ class InitDirectus {
 		foreach(APP_SETTINGS['collections'] as $collection => $fields) {
 			$this->create_collection($collection, $fields);
 		}
-
 
 		/* Create roles */
 		/* && */
@@ -215,15 +215,29 @@ class InitDirectus {
 									}
 
 									if( $own !== '*' ) {
-										if($is_and) {
-											$filter_data['_and']['owner'] = [
-												'_eq' => '$CURRENT_USER',
-											];
+										if($collection_key === 'directus_users') {
+											if($is_and) {
+												$filter_data['_and']['id'] = [
+													'_eq' => '$CURRENT_USER',
+												];
+											}
+											else {
+												$filter_data['id'] = [
+													'_eq' => '$CURRENT_USER',
+												];
+											}
 										}
 										else {
-											$filter_data['owner'] = [
-												'_eq' => '$CURRENT_USER',
-											];
+											if($is_and) {
+												$filter_data['_and']['owner'] = [
+													'_eq' => '$CURRENT_USER',
+												];
+											}
+											else {
+												$filter_data['owner'] = [
+													'_eq' => '$CURRENT_USER',
+												];
+											}
 										}
 									}
 									if($status !== null) {

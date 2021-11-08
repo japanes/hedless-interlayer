@@ -173,10 +173,14 @@ class ApiUrl {
 			if( $is_all_fields ) {
 				$fields_list[] = isset( $data['prefix'] ) ? $data['prefix'] . '.*' : '*';
 			}
+			else {
+				if( $data['action'] === 'read' ) {
+					$fields_list[] = isset( $data['prefix'] ) ? $data['prefix'] . '.id' : 'id';
+				}
+			}
 
-			foreach($collection['fields'] as $field) {
-
-				if( is_array($access_fields) ) {
+			if( is_array($access_fields) ) {
+				foreach($collection['fields'] as $field) {
 					foreach($access_fields as $access_field) {
 						if( $field['field'] === $access_field ) {
 							if( ! is_array($collection['permissions']['action'][$data['role']]) || ! in_array($data['action'], $collection['permissions']['action'][$data['role']]) ) {
@@ -220,6 +224,47 @@ class ApiUrl {
 					}
 				}
 			}
+			else {
+				foreach($collection['fields'] as $field) {
+					if( ! is_array($collection['permissions']['action'][$data['role']]) || ! in_array($data['action'], $collection['permissions']['action'][$data['role']]) ) {
+						continue;
+					}
+
+					if( $field['field'] === 'translations' ) {
+						$translation_data = [
+							'action'     => $data['action'],
+							'role'       => $data['role'],
+							'prefix'     => $field['field'],
+							'collection' => $collection['translations']['language']['many_collection'],
+						];
+
+						$fields_list[] = $this->role_fields($translation_data);
+					}
+					else if( isset($field['relation']) ) {
+						$relation_data = [
+							'action'     => $data['action'],
+							'role'       => $data['role'],
+							'prefix'     => isset( $data['prefix'] ) ? $data['prefix'] . '.' . $field['field'] : $field['field'],
+							'collection' => $field['relation']['foreign_key_table'],
+						];
+
+						$fields_list[] = $this->role_fields($relation_data);
+					}
+					else if( isset($field['langcode']) ) {
+						$lang_field = isset( $data['prefix'] ) ? $data['prefix'] . '.' . $field['field'] : $field['field'];
+						$fields_list[] = $lang_field . '.*';
+					}
+					else {
+						if( ! $is_all_fields ) {
+							$field_str = isset( $data['prefix'] ) ? $data['prefix'] . '.' . $field['field'] : $field['field'];
+
+							if( ! empty($field_str) ) {
+								$fields_list[] = $field_str;
+							}
+						}
+					}
+				}
+			}
 
 			if( ! empty($fields_list) ) {
 				$result = implode(',', $fields_list);
@@ -243,7 +288,6 @@ class ApiUrl {
 
 		if( $data !== null ) {
 			$role_fields = $this->role_fields($data);
-
 			if( ! empty($role_fields) ) {
 				$this->set_param('fields[]', $role_fields);
 			}

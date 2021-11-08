@@ -100,6 +100,19 @@ class Role {
 	}
 
 	/**
+	 * @return mixed
+	 */
+	public function get_role_id($name=null) {
+		$role = null;
+
+		if( $name !== null ) {
+			$role = file_get_contents(__DIR__ . '/../roles/' . $name);
+		}
+
+		return $role;
+	}
+
+	/**
 	 * Login user to directus fot getting auth token
 	 * @param string $login user login
 	 * @param string $password user password

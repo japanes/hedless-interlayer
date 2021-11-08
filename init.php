@@ -28,6 +28,7 @@ require_once __DIR__ . '/class/Relation.php';
 require_once __DIR__ . '/class/Field.php';
 require_once __DIR__ . '/class/Item.php';
 require_once __DIR__ . '/class/Role.php';
+require_once __DIR__ . '/class/File.php';
 require_once __DIR__ . '/class/InitDirectus.php';
 
 //$init = new InitDirectus('admin@example.com', 'd1r3ctu5');

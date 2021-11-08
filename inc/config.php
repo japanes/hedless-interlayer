@@ -19,7 +19,19 @@ const API_PASSWORD = 's9v43KuguT7SeLARS2e2';
  * type of fields
  * https://docs.directus.io/concepts/types/
  */
+
+/* TODO. Config for multiple Directuses!!! */
+
 const APP_SETTINGS = [
+	/**
+	 * API list
+	 */
+//	'api' => [
+//		'' => [
+//
+//		],
+//	],
+
 	/**
 	 * List of languages
 	 */
@@ -482,10 +494,11 @@ const APP_SETTINGS = [
 				'fields' => [
 					'api_user' => [
 						'read'   => ['first_name', 'last_name', 'email', 'location', 'title', 'description', 'avatar', 'status', 'role'],
+						'create' => '*',
 					],
 					'moderator' => [
 						'read'   => ['first_name', 'last_name', 'email', 'location', 'title', 'description', 'avatar', 'status', 'role'],
-						'create' => ['first_name', 'last_name', 'email', 'location', 'title', 'description', 'avatar', 'status', 'role'],
+						'create' => '*',
 						'update' => ['first_name', 'last_name', 'email', 'location', 'title', 'description', 'avatar', 'status', 'role']
 					],
 					'company' => [
@@ -498,11 +511,15 @@ const APP_SETTINGS = [
 					],
 				],
 				'action' => [
-					'api_user' => ['read'],
+					'api_user' => ['read','create'],
 					'moderator' => ['read','create','update'],
 					'company' => ['read','update'],
 					'user' => ['read','update'],
 				],
+				'roles' => [
+					'api_user' => ['user'],
+					'moderator' => ['company'],
+				]
 			],
 		],
 		'lang' => [

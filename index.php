@@ -10,6 +10,7 @@ require_once __DIR__ . '/class/Notification.php';
 require_once __DIR__ . '/class/ApiUrl.php';
 require_once __DIR__ . '/class/Auth.php';
 require_once __DIR__ . '/class/User.php';
+require_once __DIR__ . '/class/File.php';
 require_once __DIR__ . '/class/Collection.php';
 require_once __DIR__ . '/class/Item.php';
 require_once __DIR__ . '/class/Role.php';
@@ -19,16 +20,17 @@ if( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
 	require_once __DIR__ . '/inc/request-get.php';
 }
 elseif( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	require_once __DIR__ . '/inc/request-post.php';
 //	$user = $auth->login(API_USER, API_PASSWORD);
 
 
 }
-elseif( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
-//	$user = $auth->login(API_USER, API_PASSWORD);
-}
-elseif( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
-//	$user = $auth->login(API_USER, API_PASSWORD);
-}
+//elseif( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+////	$user = $auth->login(API_USER, API_PASSWORD);
+//}
+//elseif( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+////	$user = $auth->login(API_USER, API_PASSWORD);
+//}
 
 
 //$user_data = $auth->login("admin@example.com", "d1r3ctu5");
