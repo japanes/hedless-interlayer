@@ -33,6 +33,12 @@ if( isset($_POST['payload']) && ! empty($_POST['payload']) ) {
 if( isset($_POST['token']) && ! empty($_POST['token']) ) {
 	$data['token'] = trim($_POST['token']);
 }
+if( isset($_POST['aggregate']) && ! empty($_POST['aggregate']) ) {
+	$data['aggregate'] = trim($_POST['aggregate']);
+}
+if( isset($_POST['filter']) && ! empty($_POST['filter']) ) {
+	$data['filter'] = trim($_POST['filter']);
+}
 
 if($data['action'] === 'auth') {
 	/* Login user */

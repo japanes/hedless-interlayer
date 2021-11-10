@@ -61,7 +61,6 @@ class InitDirectus {
 
 		$res = $this->create_collection($lang_title, $lang_fields);
 
-
 		/* Create all collections  */
 		foreach(APP_SETTINGS['collections'] as $collection => $fields) {
 			$this->create_collection($collection, $fields);
@@ -73,7 +72,6 @@ class InitDirectus {
 		$this->create_role_n_permissions();
 
 		$this->create_api_user();
-
 	}
 
 	private function check_collection($collection=null) {
@@ -154,7 +152,9 @@ class InitDirectus {
 		$roles           = APP_SETTINGS['user_roles'];
 		$collections     = array_merge(APP_SETTINGS['collections'], APP_SETTINGS['system_collections']);
 
-		$roles_data = [];
+		$roles_data      = [];
+		$role_data_total = [];
+		$role_id         = null;
 		foreach($roles as $role) {
 			$collection_list = [];
 
@@ -164,7 +164,14 @@ class InitDirectus {
 				$role_id = file_get_contents($role_file);
 
 				$url      = $this->ApiUrl->url('/roles/' . $role_id, $this->user['token']);
-				$role_data = $this->HTTP->get($url);
+				$raw_role_data = $this->HTTP->get($url);
+				$role_data     = $this->Validation->output($raw_role_data);
+
+				if( isset($role_data['response']) && isset($role_data['response']['data']) && isset($role_data['response']['data']['name']) ) {
+					if( $role === $role_data['response']['data']['name'] ) {
+						$role_exists = true;
+					}
+				}
 			}
 
 			if( ! $role_exists ) {
@@ -185,115 +192,148 @@ class InitDirectus {
 					'app_access' => false,
 				];
 			}
+			else {
+				$remove_permission_url  = $this->ApiUrl->url('/permissions', $this->user['token']);
+				$remove_raw_data = $this->HTTP->get($remove_permission_url . '&filter[role][_eq]=' . $role_id);
+				$remove_roles    = $this->Validation->output($remove_raw_data);
+
+				$permissions_ids = [];
+				if( is_array($remove_roles['response']['data']) ) {
+					foreach( $remove_roles['response']['data'] as $remove_role ) {
+						$permissions_ids[] = $remove_role['id'];
+					}
+				}
+
+				foreach($permissions_ids as $permissions_id) {
+					$remove_permission_url_single =  $this->ApiUrl->url('/permissions'. '/' . $permissions_id, $this->user['token']);
+					$remove_all_data_raw = $this->HTTP->delete($remove_permission_url_single);
+					$remove_all_data     = $this->Validation->output($remove_all_data_raw);
+				}
+
+				$url              = $this->ApiUrl->url('/roles/' . $role_id, $this->user['token']);
+				$raw_data         = $this->HTTP->get($url);
+				$role_data_single = $this->Validation->output($raw_data);
+
+				if( ! isset($role_data_total['response']) && ! isset($role_data_total['response']['data']) ) {
+					$role_data_total = [
+						'response' => [
+							'data' => []
+						]
+					];
+				}
+				$role_data_total['response']['data'][] = $role_data_single['response']['data'];
+			}
 		}
 
 		if( ! empty($roles_data) ) {
-			$url       = $this->ApiUrl->url('/roles', $this->user['token']);
-			$raw_data  = $this->HTTP->post($url, $roles_data);
-			$role_data = $this->Validation->output($raw_data);
+			$url             = $this->ApiUrl->url('/roles', $this->user['token']);
+			$raw_data        = $this->HTTP->post($url, $roles_data);
+			$role_data_total = $this->Validation->output($raw_data);
+		}
 
-			if( isset($role_data['response']['data']) && is_array($role_data['response']['data']) ) {
-				foreach($role_data['response']['data'] as $role) {
-					if( isset($role['id']) && isset($role['name']) ) {
+		if( isset($role_data_total['response']['data']) && is_array($role_data_total['response']['data']) ) {
+			foreach($role_data_total['response']['data'] as $role) {
+				if( isset($role['id']) && isset($role['name']) ) {
 
-						foreach($collections as $collection_key => $collection) {
-							$perm = $collection['permissions'];
+					foreach($collections as $collection_key => $collection) {
+						$perm = $collection['permissions'];
 
-							$own     = $perm['own'][$role['name']];
-							$fields  = $perm['fields'][$role['name']];
-							$status  = isset($perm['status']) && is_array($perm['status']) && isset($perm['status'][$role['name']]) ? $perm['status'][$role['name']] : null;
-							$actions = $perm['action'][$role['name']];
+						$own     = $perm['own'][$role['name']];
+						$fields  = $perm['fields'][$role['name']];
+						$status  = isset($perm['status']) && is_array($perm['status']) && isset($perm['status'][$role['name']]) ? $perm['status'][$role['name']] : null;
+						$actions = $perm['action'][$role['name']];
 
-							foreach($actions as $action) {
+						foreach($actions as $action) {
 
-								if( $own !== '*' || $status !== null ) {
-									$is_and = ($own !== '*' && $status !== null);
+							if( $own !== '*' || $status !== null ) {
+								$is_and = ($own !== '*' && $status !== null);
 
-									$filter_data = [];
-									if($is_and) {
-										$filter_data['_and'] = [];
-									}
+								$filter_data = [];
+								if($is_and) {
+									$filter_data['_and'] = [];
+								}
 
-									if( $own !== '*' ) {
-										if($collection_key === 'directus_users') {
-											if($is_and) {
-												$filter_data['_and']['id'] = [
-													'_eq' => '$CURRENT_USER',
-												];
-											}
-											else {
-												$filter_data['id'] = [
-													'_eq' => '$CURRENT_USER',
-												];
-											}
-										}
-										else {
-											if($is_and) {
-												$filter_data['_and']['owner'] = [
-													'_eq' => '$CURRENT_USER',
-												];
-											}
-											else {
-												$filter_data['owner'] = [
-													'_eq' => '$CURRENT_USER',
-												];
-											}
-										}
-									}
-									if($status !== null) {
+								if( $own !== '*' ) {
+									if($collection_key === 'directus_users') {
 										if($is_and) {
-											$filter_data['_and']['status'] = [
-												'_in' => $status
+											$filter_data['_and']['id'] = [
+												'_eq' => '$CURRENT_USER',
 											];
 										}
 										else {
-											$filter_data['status'] = [
-												'_in' => $status
+											$filter_data['id'] = [
+												'_eq' => '$CURRENT_USER',
+											];
+										}
+									}
+									else {
+										if($is_and) {
+											$filter_data['_and']['owner'] = [
+												'_eq' => '$CURRENT_USER',
+											];
+										}
+										else {
+											$filter_data['owner'] = [
+												'_eq' => '$CURRENT_USER',
 											];
 										}
 									}
 								}
-
-								$permission_fields = null;
-								if( isset($fields['*']) ) {
-									$permission_fields = $fields['*'];
+								if($status !== null) {
+									if($is_and) {
+										$filter_data['_and']['status'] = [
+											'_in' => $status
+										];
+									}
+									else {
+										$filter_data['status'] = [
+											'_in' => $status
+										];
+									}
 								}
-								else {
-									$permission_fields = $fields[$action];
-								}
-								if( ! is_array($permission_fields) && $permission_fields === '*' ) {
-									$filter_data = null;
-								}
-
-								if( is_array($permission_fields) && $action === 'read' ) {
-									array_unshift($permission_fields , 'id');
-								}
-
-								$permission = [
-									'role'        => $role['id'],
-									'collection'  => $collection_key,
-									'action'      => $action,
-									'permissions' => $filter_data,
-									'validation'  => null,
-									'presets'     => null,
-									'fields'      => $permission_fields,
-								];
-
-								var_dump($permission_fields);
-
-								$permission_url  = $this->ApiUrl->url('/permissions', $this->user['token']);
-								$raw_data        = $this->HTTP->post($permission_url, $permission);
-								$permission_data = $this->Validation->output($raw_data);
 							}
 
+							$permission_fields = null;
+							if( isset($fields['*']) ) {
+								$permission_fields = $fields['*'];
+							}
+							else {
+								$permission_fields = $fields[$action];
+							}
+							if( $action === 'create' ) {
+								$permission_fields = '*';
+							}
+
+							if( ! is_array($permission_fields) && $permission_fields === '*' ) {
+								$filter_data = null;
+							}
+
+							if( is_array($permission_fields) && $action === 'read' ) {
+								array_unshift($permission_fields , 'id');
+							}
+
+							$permission = [
+								'role'        => $role['id'],
+								'collection'  => $collection_key,
+								'action'      => $action,
+								'permissions' => $filter_data,
+								'validation'  => null,
+								'presets'     => null,
+								'fields'      => $permission_fields,
+							];
+
+							$permission_url  = $this->ApiUrl->url('/permissions', $this->user['token']);
+							$raw_data        = $this->HTTP->post($permission_url, $permission);
+							$permission_data = $this->Validation->output($raw_data);
 						}
 
+					}
 
-						$res = file_put_contents( __DIR__ . '/../roles/' . $role['name'], $role['id']);
+
+					$res = file_put_contents( __DIR__ . '/../roles/' . $role['name'], $role['id']);
 
 //						var_dump(__DIR__ . '/../roles/' . $role['name']);
 //						var_dump($res);
-					}
 				}
 			}
 		}

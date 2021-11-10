@@ -3,12 +3,12 @@ namespace JPNS\Directus\Directus;
 
 use JPNS\Directus\Collection\Collection;
 use JPNS\Directus\Item\Item;
+use JPNS\Directus\User\User;
 
 class Directus {
 	public $token;
 	public $entity;
 	public $user;
-
 
 	public function __construct($type, $token, $user=null) {
 		$this->token = $token;
@@ -19,6 +19,9 @@ class Directus {
 		}
 		if($type === 'item') {
 			$this->entity = new Item($this->token, $this->user);
+		}
+		if($type === 'user') {
+			$this->entity = new User($this->token);
 		}
 	}
 

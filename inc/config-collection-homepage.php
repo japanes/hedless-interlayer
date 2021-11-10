@@ -150,16 +150,3 @@ const COLLECTION_HOMEPAGE = [
 		],
 	],
 ];
-/*
-
-
-
-
-
-
-
-
-
-
-
- */

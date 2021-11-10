@@ -2,3 +2,8 @@ session/*
 !session/.htaccess
 roles/*
 !roles/.htaccess
+
+**/config-collections.php.back
+**/**/config-collections.php.back
+**/**/**/config-collections.php.back
+config-collections.php.back

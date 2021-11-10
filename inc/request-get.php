@@ -35,6 +35,15 @@ if( isset($_GET['collection']) && ! empty($_GET['collection']) ) {
 if( isset($_GET['id']) && ! empty($_GET['id']) ) {
 	$data['id'] = trim($_GET['id']);
 }
+if( isset($_GET['token']) && ! empty($_GET['token']) ) {
+	$data['token'] = trim($_GET['token']);
+}
+if( isset($_GET['aggregate']) && ! empty($_GET['aggregate']) ) {
+	$data['aggregate'] = trim($_GET['aggregate']);
+}
+if( isset($_GET['filter']) && ! empty($_GET['filter']) ) {
+	$data['filter'] = trim($_GET['filter']);
+}
 
 /* Init Directus class and request result data */
 $directus = new Directus($data['action'], $token, $user);

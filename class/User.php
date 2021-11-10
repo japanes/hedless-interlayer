@@ -5,6 +5,7 @@ use JPNS\Basic\http\HTTP;
 use JPNS\Basic\Notification\Notification;
 use JPNS\Directus\Validation\Validation;
 use JPNS\Directus\ApiUrl\ApiUrl;
+use JPNS\Directus\Auth\Auth;
 
 /**
  * List Users
@@ -15,19 +16,23 @@ use JPNS\Directus\ApiUrl\ApiUrl;
  */
 class User {
 	public $token;
+	public $user;
 
 	public $HTTP;
 	public $Validation;
 	public $Notification;
 	public $ApiUrl;
+	public $Auth;
 
-	function __construct($token=null) {
+	function __construct($token=null, $user=null) {
 		$this->token = $token;
+		$this->user  = $user;
 
 		$this->HTTP = new HTTP();
 		$this->Validation = new Validation();
 		$this->Notification = new Notification();
 		$this->ApiUrl = new ApiUrl();
+		$this->Auth = new Auth();
 	}
 
 	/**
@@ -51,8 +56,29 @@ class User {
 	 *
 	 * @return array array with data
 	 */
-	public function get_list() {
+	public function get_list($data=[]) {
 		$result = [];
+
+		var_dump($this->user);
+		exit();
+		$url_data = null;
+//		if( isset($data['token']) ) {
+//			$user_raw = $this->Auth->get_user(['session' => $data['token']]);
+//
+//			var_dump($user_raw);
+//			exit();
+//
+//			$url_data = [
+//				'collection' => $data['collection'],
+//				'role'       => $this->user['user_role_title'],
+//				'action'     => 'read'
+//			];
+//		}
+		$url = $this->ApiUrl->url('/users', $this->token, $url_data);
+
+		var_dump($data);
+		var_dump($url);
+		exit();
 //		$collection = trim($data['collection']);
 //		$url = $this->ApiUrl->url('/items/' . $collection, $this->token);
 //
